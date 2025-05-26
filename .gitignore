@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.Python
+build/
+dist/
+
+# Virtual environment
+venv/
+env/
+*.env
+
+# Databases
+*.sqlite3
+*.db
+
+# Django specific
+*.log
+local_settings.py  # If you create one for local specific settings
+media/             # User-uploaded files (usually handled by cloud storage in prod)
+static_root/       # Collected static files
+
+# Operating System files
+.DS_Store
+.localized
+Thumbs.db

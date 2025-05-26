@@ -1,0 +1,16 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Welcome to Restaurant Booking{% endblock %}
+
+{% block content %}
+    <h1>Welcome to Our Restaurant Booking System!</h1>
+    <p>Easily book a table for your next visit.</p>
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}!</p>
+        <p><a href="{% url 'make_booking' %}">Make a new reservation</a></p>
+        <p><a href="{% url 'my_bookings' %}">View your existing bookings</a></p>
+    {% else %}
+        <p><a href="{% url 'login' %}">Log in</a> to make a booking or view your reservations.</p>
+        <p>If you don't have an account, you can use the admin login with the superuser you created for now.</p>
+    {% endif %}
+{% endblock %}

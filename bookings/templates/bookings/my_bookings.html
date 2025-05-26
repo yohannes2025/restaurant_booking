@@ -1,0 +1,41 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+    <h1>My Bookings</h1>
+
+    <h2>Upcoming Bookings</h2>
+    {% if upcoming_bookings %}
+        {% for booking in upcoming_bookings %}
+            <div class="booking-card">
+                <p><strong>Table:</strong> {{ booking.table.number }} (Capacity: {{ booking.table.capacity }})</p>
+                <p><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+                <p><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+                <p><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                {% if booking.notes %}<p><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+                <form action="{% url 'cancel_booking' booking.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel Booking</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>You have no upcoming bookings.</p>
+    {% endif %}
+
+    <h2>Past Bookings</h2>
+    {% if past_bookings %}
+        {% for booking in past_bookings %}
+            <div class="booking-card">
+                <p><strong>Table:</strong> {{ booking.table.number }} (Capacity: {{ booking.table.capacity }})</p>
+                <p><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+                <p><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+                <p><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                {% if booking.notes %}<p><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>You have no past bookings.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Make a Booking{% endblock %}
+
+{% block content %}
+    <h1>Make a New Booking</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_ul }}
+        <button type="submit">Find Table & Book</button>
+    </form>
+{% endblock %}
