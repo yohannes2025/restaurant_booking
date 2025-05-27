@@ -1,0 +1,103 @@
+{% extends 'bookings/staff_base.html' %}
+
+{% block title %}Manage Tables{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Manage Restaurant Tables</h1>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            Add New Table
+        </div>
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-6">
+                    <label for="{{ form.number.id_for_label }}" class="form-label">{{ form.number.label }}</label>
+                    {{ form.number }}
+                    {% for error in form.number.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.capacity.id_for_label }}" class="form-label">{{ form.capacity.label }}</label>
+                    {{ form.capacity }}
+                    {% for error in form.capacity.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                {% if form.non_field_errors %}
+                    <div class="col-12 alert alert-danger">
+                        {% for error in form.non_field_errors %}<p class="mb-0">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">Add Table</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <h2 class="mt-5 mb-3">Existing Tables</h2>
+    {% if tables %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Table Number</th>
+                        <th>Capacity</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for table in tables %}
+                        <tr>
+                            <td>{{ table.number }}</td>
+                            <td>{{ table.capacity }}</td>
+                            <td>
+                                <a href="{% url 'staff_table_edit' table.id %}" class="btn btn-sm btn-warning me-2">Edit</a>
+                                <form action="{% url 'staff_table_delete' table.id %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete Table {{ table.number }}? This cannot be undone and will affect related bookings!');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No tables have been added yet. Please use the form above to add your first table.
+        </div>
+    {% endif %}
+{% endblock %}
+{% comment %} {% extends 'bookings/staff_base.html' %}
+
+{% block title %}Manage Tables{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Manage Restaurant Tables</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Table Number</th>
+                    <th>Capacity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for table in tables %}
+                    <tr>
+                        <td>{{ table.number }}</td>
+                        <td>{{ table.capacity }}</td>
+                        <td>
+                            {# Add edit/delete table links here later if needed #}
+                            <span class="text-muted">No direct actions here yet. Use Django Admin.</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="mt-3">To add or modify tables, please use the <a href="{% url 'admin:bookings_table_add' %}" target="_blank">Django Admin interface</a>.</p>
+{% endblock %} {% endcomment %}

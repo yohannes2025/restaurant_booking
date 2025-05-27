@@ -3,6 +3,59 @@
 {% block title %}Welcome to Restaurant Booking{% endblock %}
 
 {% block content %}
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Welcome to Our Restaurant Booking System!</h1>
+            <p class="col-md-8 fs-4">Easily book a table for your next visit.</p>
+            {% if user.is_authenticated %}
+                <p class="fs-5">Hello, {{ user.username }}!</p>
+                <p>
+                    <a class="btn btn-primary btn-lg me-2 mb-3 mb-md-0" href="{% url 'make_booking' %}" role="button">
+                        Make a new reservation
+                    </a>
+                    <a class="btn btn-outline-secondary btn-lg" href="{% url 'my_bookings' %}" role="button">
+                        View your existing bookings
+                    </a>
+                </p>
+            {% else %}
+                <p class="fs-5">
+                    <a class="btn btn-primary btn-lg me-2" href="{% url 'login' %}" role="button">Log in</a> to make a booking or view your reservations.
+                </p>
+                <p class="text-muted">If you don't have an account, you can use the admin login with the superuser you created for now.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}Welcome to Restaurant Booking{% endblock %}
+
+{% block content %}
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Welcome to Our Restaurant Booking System!</h1>
+            <p class="col-md-8 fs-4">Easily book a table for your next visit.</p>
+            {% if user.is_authenticated %}
+                <p class="fs-5">Hello, {{ user.username }}!</p>
+                <p>
+                    <a class="btn btn-primary btn-lg me-2" href="{% url 'make_booking' %}" role="button">Make a new reservation</a>
+                    <a class="btn btn-outline-secondary btn-lg" href="{% url 'my_bookings' %}" role="button">View your existing bookings</a>
+                </p>
+            {% else %}
+                <p class="fs-5">
+                    <a class="btn btn-primary btn-lg me-2" href="{% url 'login' %}" role="button">Log in</a> to make a booking or view your reservations.
+                </p>
+                <p class="text-muted">If you don't have an account, you can use the admin login with the superuser you created for now.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %} {% endcomment %}
+
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}Welcome to Restaurant Booking{% endblock %}
+
+{% block content %}
     <h1>Welcome to Our Restaurant Booking System!</h1>
     <p>Easily book a table for your next visit.</p>
     {% if user.is_authenticated %}
@@ -13,4 +66,4 @@
         <p><a href="{% url 'login' %}">Log in</a> to make a booking or view your reservations.</p>
         <p>If you don't have an account, you can use the admin login with the superuser you created for now.</p>
     {% endif %}
-{% endblock %}
+{% endblock %} {% endcomment %}

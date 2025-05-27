@@ -3,6 +3,117 @@
 {% block title %}My Bookings{% endblock %}
 
 {% block content %}
+    <h1 class="mb-4">My Bookings</h1>
+
+    <h2 class="mb-3">Upcoming Bookings</h2>
+    {% if upcoming_bookings %}
+        {% for booking in upcoming_bookings %}
+            <div class="card booking-card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Booking for Table {{ booking.table.number }}</h5>
+                    <p class="card-text mb-1"><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+                    <p class="card-text mb-1"><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+                    <p class="card-text mb-1"><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                    <p class="card-text mb-1"><strong>Status:</strong> <span class="badge {% if booking.status == 'pending' %}bg-warning{% elif booking.status == 'confirmed' %}bg-success{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">{{ booking.get_status_display }}</span></p>
+                    {% if booking.notes %}<p class="card-text mb-1"><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+                    <p class="card-text"><small class="text-muted">Table Capacity: {{ booking.table.capacity }}</small></p>
+
+                    {% if booking.status != 'cancelled' %}
+                        <form action="{% url 'cancel_booking' booking.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel Booking</button>
+                        </form>
+                    {% else %}
+                        <span class="text-muted">This booking has been cancelled.</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            You have no upcoming bookings.
+        </div>
+    {% endif %}
+
+    <h2 class="mt-4 mb-3">Past Bookings</h2>
+    {% if past_bookings %}
+        {% for booking in past_bookings %}
+            <div class="card booking-card bg-light shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Booking for Table {{ booking.table.number }}</h5>
+                    <p class="card-text mb-1"><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+                    <p class="card-text mb-1"><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+                    <p class="card-text mb-1"><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                    <p class="card-text mb-1"><strong>Status:</strong> <span class="badge {% if booking.status == 'completed' %}bg-success{% elif booking.status == 'no-show' %}bg-secondary{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-info{% endif %}">{{ booking.get_status_display }}</span></p>
+                    {% if booking.notes %}<p class="card-text mb-1"><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+                    <p class="card-text"><small class="text-muted">Table Capacity: {{ booking.table.capacity }}</small></p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-secondary" role="alert">
+            You have no past bookings.
+        </div>
+    {% endif %}
+{% endblock %}
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">My Bookings</h1>
+
+    <h2 class="mb-3">Upcoming Bookings</h2>
+    {% if upcoming_bookings %}
+        {% for booking in upcoming_bookings %}
+            <div class="card booking-card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Booking for Table {{ booking.table.number }}</h5>
+                    <p class="card-text mb-1"><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+                    <p class="card-text mb-1"><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+                    <p class="card-text mb-1"><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                    {% if booking.notes %}<p class="card-text mb-1"><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+                    <p class="card-text"><small class="text-muted">Table Capacity: {{ booking.table.capacity }}</small></p>
+
+                    <form action="{% url 'cancel_booking' booking.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel Booking</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            You have no upcoming bookings.
+        </div>
+    {% endif %}
+
+    <h2 class="mt-4 mb-3">Past Bookings</h2>
+    {% if past_bookings %}
+        {% for booking in past_bookings %}
+            <div class="card booking-card bg-light shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Booking for Table {{ booking.table.number }}</h5>
+                    <p class="card-text mb-1"><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+                    <p class="card-text mb-1"><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+                    <p class="card-text mb-1"><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                    {% if booking.notes %}<p class="card-text mb-1"><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+                    <p class="card-text"><small class="text-muted">Table Capacity: {{ booking.table.capacity }}</small></p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-secondary" role="alert">
+            You have no past bookings.
+        </div>
+    {% endif %}
+{% endblock %} {% endcomment %}
+
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
     <h1>My Bookings</h1>
 
     <h2>Upcoming Bookings</h2>
@@ -38,4 +149,4 @@
     {% else %}
         <p>You have no past bookings.</p>
     {% endif %}
-{% endblock %}
+{% endblock %} {% endcomment %}

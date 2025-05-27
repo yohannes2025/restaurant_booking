@@ -1,0 +1,99 @@
+{% extends 'bookings/staff_base.html' %}
+
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Staff Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Today's Confirmed Bookings</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ confirmed_today_count }}</h5>
+                    <p class="card-text">Bookings confirmed for today.</p>
+                    <a href="{% url 'staff_booking_list' %}?date={{ today|date:'Y-m-d' }}&status=confirmed" class="btn btn-light btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Upcoming Active Bookings</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ upcoming_active_bookings_count }}</h5>
+                    <p class="card-text">Bookings pending or confirmed for today/future.</p>
+                    <a href="{% url 'staff_booking_list' %}?status=pending" class="btn btn-light btn-sm">Review Pending</a>
+                    <a href="{% url 'staff_booking_list' %}?status=confirmed" class="btn btn-light btn-sm ms-2">Review Confirmed</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total Tables</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_tables }}</h5>
+                    <p class="card-text">Available tables in the system.</p>
+                    <a href="{% url 'staff_table_list' %}" class="btn btn-light btn-sm">Manage Tables</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h2 class="mb-3">Quick Actions</h2>
+        <div class="list-group">
+            <a href="{% url 'staff_booking_list' %}" class="list-group-item list-group-item-action">Manage All Bookings</a>
+            <a href="{% url 'staff_table_list' %}" class="list-group-item list-group-item-action">Manage Tables</a>
+            <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action" target="_blank">Go to Django Admin</a>
+        </div>
+    </div>
+{% endblock %}
+{% comment %} {% extends 'bookings/staff_base.html' %}
+
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Staff Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Today's Confirmed Bookings</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ confirmed_today_count }}</h5>
+                    <p class="card-text">Bookings confirmed for today.</p>
+                    <a href="{% url 'staff_booking_list' %}?date={{ today|date:'Y-m-d' }}&status=confirmed" class="btn btn-light btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Upcoming Pending Bookings</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ upcoming_bookings_count }}</h5>
+                    <p class="card-text">New bookings awaiting confirmation.</p>
+                    <a href="{% url 'staff_booking_list' %}?status=pending" class="btn btn-light btn-sm">Review Now</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total Tables</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_tables }}</h5>
+                    <p class="card-text">Available tables in the system.</p>
+                    <a href="{% url 'staff_table_list' %}" class="btn btn-light btn-sm">Manage Tables</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h2 class="mb-3">Quick Actions</h2>
+        <div class="list-group">
+            <a href="{% url 'staff_booking_list' %}" class="list-group-item list-group-item-action">Manage All Bookings</a>
+            <a href="{% url 'staff_table_list' %}" class="list-group-item list-group-item-action">Manage Tables</a>
+            <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action" target="_blank">Go to Django Admin</a>
+        </div>
+    </div>
+{% endblock %} {% endcomment %}

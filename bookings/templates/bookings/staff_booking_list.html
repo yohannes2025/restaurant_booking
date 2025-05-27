@@ -1,0 +1,168 @@
+{% extends 'bookings/staff_base.html' %}
+
+{% block title %}All Bookings{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">All Bookings</h1>
+
+    <form method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-md-4">
+            <label for="query" class="form-label">Search</label>
+            <input type="text" class="form-control" id="query" name="q" placeholder="User, Table, Notes" value="{{ query|default_if_none:'' }}">
+        </div>
+        <div class="col-md-3">
+            <label for="status_filter" class="form-label">Status</label>
+            <select class="form-select" id="status_filter" name="status">
+                <option value="">All</option>
+                {% for choice_value, choice_label in status_choices %}
+                    <option value="{{ choice_value }}" {% if status_filter == choice_value %}selected{% endif %}>{{ choice_label|capfirst }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="date_filter" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date_filter" name="date" value="{{ date_filter|default_if_none:'' }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+        </div>
+    </form>
+
+    {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Table</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Guests</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.id }}</td>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.table.number }}</td>
+                            <td>{{ booking.booking_date|date:"M d, Y" }}</td>
+                            <td>{{ booking.booking_time|time:"h:i A" }}</td>
+                            <td>{{ booking.number_of_guests }}</td>
+                            <td><span class="badge {% if booking.status == 'pending' %}bg-warning{% elif booking.status == 'confirmed' %}bg-success{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">{{ booking.get_status_display }}</span></td>
+                            <td>
+                                <a href="{% url 'staff_booking_detail' booking.id %}" class="btn btn-info btn-sm">View/Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if bookings.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ bookings.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">Previous</a></li>
+                {% endif %}
+                {% for i in bookings.paginator.page_range %}
+                    <li class="page-item {% if bookings.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">{{ i }}</a></li>
+                {% endfor %}
+                {% if bookings.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ bookings.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            No bookings found matching your criteria.
+        </div>
+    {% endif %}
+{% endblock %}
+{% comment %} {% extends 'bookings/staff_base.html' %}
+
+{% block title %}All Bookings{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">All Bookings</h1>
+
+    <form method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-md-4">
+            <label for="query" class="form-label">Search</label>
+            <input type="text" class="form-control" id="query" name="q" placeholder="User, Table, Notes" value="{{ query|default_if_none:'' }}">
+        </div>
+        <div class="col-md-3">
+            <label for="status_filter" class="form-label">Status</label>
+            <select class="form-select" id="status_filter" name="status">
+                <option value="">All</option>
+                {% for choice_value, choice_label in status_choices %}
+                    <option value="{{ choice_value }}" {% if status_filter == choice_value %}selected{% endif %}>{{ choice_label|capfirst }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="date_filter" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date_filter" name="date" value="{{ date_filter|default_if_none:'' }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+        </div>
+    </form>
+
+    {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Table</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Guests</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.id }}</td>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.table.number }}</td>
+                            <td>{{ booking.booking_date|date:"M d, Y" }}</td>
+                            <td>{{ booking.booking_time|time:"h:i A" }}</td>
+                            <td>{{ booking.number_of_guests }}</td>
+                            <td><span class="badge {% if booking.status == 'pending' %}bg-warning{% elif booking.status == 'confirmed' %}bg-success{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">{{ booking.get_status_display }}</span></td>
+                            <td>
+                                <a href="{% url 'staff_booking_detail' booking.id %}" class="btn btn-info btn-sm">View/Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if bookings.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ bookings.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">Previous</a></li>
+                {% endif %}
+                {% for i in bookings.paginator.page_range %}
+                    <li class="page-item {% if bookings.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">{{ i }}</a></li>
+                {% endfor %}
+                {% if bookings.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ bookings.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            No bookings found matching your criteria.
+        </div>
+    {% endif %}
+{% endblock %} {% endcomment %}

@@ -1,0 +1,101 @@
+{% extends 'bookings/staff_base.html' %}
+
+{% block title %}Booking Details{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Booking Details (ID: {{ booking.id }})</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Booking Information
+        </div>
+        <div class="card-body">
+            <p><strong>User:</strong> {{ booking.user.username }} ({{ booking.user.email }})</p>
+            <p><strong>Table:</strong> {{ booking.table.number }} (Capacity: {{ booking.table.capacity }})</p>
+            <p><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+            <p><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+            <p><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+            <p><strong>Current Status:</strong> <span class="badge {% if booking.status == 'pending' %}bg-warning{% elif booking.status == 'confirmed' %}bg-success{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">{{ booking.get_status_display }}</span></p>
+            <p><strong>Notes (Customer):</strong> {{ booking.notes|default:"N/A" }}</p>
+            <p><small class="text-muted">Booked On: {{ booking.created_at|date:"F d, Y H:i" }}</small></p>
+            <p><small class="text-muted">Last Updated: {{ booking.updated_at|date:"F d, Y H:i" }}</small></p>
+        </div>
+    </div>
+
+    <h2 class="mb-3">Update Booking Status</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+            <a href="{% url 'staff_booking_list' %}" class="btn btn-secondary">Back to Bookings</a>
+        </div>
+    </form>
+{% endblock %}
+{% comment %} {% extends 'bookings/staff_base.html' %}
+
+{% block title %}Booking Details{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Booking Details (ID: {{ booking.id }})</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Booking Information
+        </div>
+        <div class="card-body">
+            <p><strong>User:</strong> {{ booking.user.username }}</p>
+            <p><strong>Table:</strong> {{ booking.table.number }} (Capacity: {{ booking.table.capacity }})</p>
+            <p><strong>Date:</strong> {{ booking.booking_date|date:"F d, Y" }}</p>
+            <p><strong>Time:</strong> {{ booking.booking_time|time:"h:i A" }}</p>
+            <p><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+            <p><strong>Current Status:</strong> <span class="badge {% if booking.status == 'pending' %}bg-warning{% elif booking.status == 'confirmed' %}bg-success{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">{{ booking.get_status_display }}</span></p>
+            <p><strong>Notes:</strong> {{ booking.notes|default:"N/A" }}</p>
+            <p><small class="text-muted">Booked On: {{ booking.created_at|date:"F d, Y H:i" }}</small></p>
+        </div>
+    </div>
+
+    <h2 class="mb-3">Update Booking Status</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Update Status</button>
+        <a href="{% url 'staff_booking_list' %}" class="btn btn-secondary ms-2">Back to Bookings</a>
+    </form>
+{% endblock %} {% endcomment %}

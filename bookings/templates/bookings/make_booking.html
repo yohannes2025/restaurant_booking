@@ -3,10 +3,73 @@
 {% block title %}Make a Booking{% endblock %}
 
 {% block content %}
+    <h1 class="mb-4">Make a New Booking</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-success">Find Table & Book</button>
+    </form>
+{% endblock %}
+{% comment %} 
+{% extends 'bookings/base.html' %}
+
+{% block title %}Make a Booking{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Make a New Booking</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-success">Find Table & Book</button>
+    </form>
+{% endblock %} {% endcomment %}
+
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}Make a Booking{% endblock %}
+
+{% block content %}
     <h1>Make a New Booking</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_ul }}
         <button type="submit">Find Table & Book</button>
     </form>
-{% endblock %}
+{% endblock %} {% endcomment %}

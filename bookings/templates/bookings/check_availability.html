@@ -1,0 +1,128 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Check Table Availability{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Check Table Availability</h1>
+
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="{{ form.check_date.id_for_label }}" class="form-label">{{ form.check_date.label }}</label>
+                {{ form.check_date }}
+                {% for error in form.check_date.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <label for="{{ form.check_time.id_for_label }}" class="form-label">{{ form.check_time.label }}</label>
+                {{ form.check_time }}
+                {% for error in form.check_time.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <label for="{{ form.num_guests.id_for_label }}" class="form-label">{{ form.num_guests.label }}</label>
+                {{ form.num_guests }}
+                {% for error in form.num_guests.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary mt-3">Check Availability</button>
+    </form>
+
+    {% if available_tables %}
+        <h2 class="mt-5 mb-3">Available Tables:</h2>
+        <div class="row">
+            {% for table in available_tables %}
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Table {{ table.number }}</h5>
+                            <p class="card-text">Capacity: {{ table.capacity }} guests</p>
+                            <p class="card-text text-muted">Perfect for your group!</p>
+                            {# Optional: Add a "Book this table" button that pre-fills the booking form #}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif request.method == 'POST' %}
+        <div class="alert alert-info mt-5" role="alert">
+            No tables available for the selected criteria. Please try a different date, time, or number of guests.
+        </div>
+    {% endif %}
+{% endblock %}
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}Check Table Availability{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Check Table Availability</h1>
+
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="{{ form.check_date.id_for_label }}" class="form-label">{{ form.check_date.label }}</label>
+                {{ form.check_date }}
+                {% for error in form.check_date.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <label for="{{ form.check_time.id_for_label }}" class="form-label">{{ form.check_time.label }}</label>
+                {{ form.check_time }}
+                {% for error in form.check_time.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <label for="{{ form.num_guests.id_for_label }}" class="form-label">{{ form.num_guests.label }}</label>
+                {{ form.num_guests }}
+                {% for error in form.num_guests.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary mt-3">Check Availability</button>
+    </form>
+
+    {% if available_tables %}
+        <h2 class="mt-5 mb-3">Available Tables:</h2>
+        <div class="row">
+            {% for table in available_tables %}
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Table {{ table.number }}</h5>
+                            <p class="card-text">Capacity: {{ table.capacity }} guests</p>
+                            <p class="card-text text-muted">Perfect for your group!</p>
+                            {# Optional: Add a "Book this table" button that pre-fills the booking form #}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif request.method == 'POST' %}
+        <div class="alert alert-info mt-5" role="alert">
+            No tables available for the selected criteria. Please try a different date, time, or number of guests.
+        </div>
+    {% endif %}
+{% endblock %} {% endcomment %}
