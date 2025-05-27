@@ -21,7 +21,7 @@
                 <p class="fs-5">
                     <a class="btn btn-primary btn-lg me-2" href="{% url 'login' %}" role="button">Log in</a> to make a booking or view your reservations.
                 </p>
-                <p class="text-muted">If you don't have an account, you can use the admin login with the superuser you created for now.</p>
+                {% comment %} <p class="text-muted">If you don't have an account, you can use the admin login with the superuser you created for now.</p> {% endcomment %}
             {% endif %}
         </div>
     </div>

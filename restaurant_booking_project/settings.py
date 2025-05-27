@@ -130,3 +130,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'home'  # Redirect to home page after login
 LOGOUT_REDIRECT_URL = 'home'  # Redirect to home page after logout
 LOGIN_URL = 'login'  # The URL where the login view is located
+

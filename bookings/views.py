@@ -175,7 +175,7 @@ def cancel_booking(request, booking_id):
     booking_datetime = timezone.make_aware(booking_datetime)
 
     if booking_datetime < timezone.now() + timedelta(hours=2):
-        messages.error(
+        messages.warning(
             request, "Bookings cannot be cancelled within 2 hours of the reservation time.")
     else:
         booking.delete()
