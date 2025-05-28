@@ -1,7 +1,6 @@
 # bookings/forms.py
 from .models import Table, Booking
 from django import forms
-from .models import Booking, Table
 from django.utils import timezone
 from datetime import date, time, datetime, timedelta
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm

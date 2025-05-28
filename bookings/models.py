@@ -54,7 +54,6 @@ class Booking(models.Model):
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
         ('cancelled', 'Cancelled'),
-        ('no-show', 'No-Show'),
         ('completed', 'Completed'),  # For past bookings that were honored
     ]
 

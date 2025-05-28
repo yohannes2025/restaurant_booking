@@ -1,39 +1,33 @@
 # bookings/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from .forms import BookingForm, AvailabilityForm, BookingStatusUpdateForm
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db import transaction
-from django.utils import timezone
-from datetime import datetime, timedelta, date, time
-from django.contrib.admin.views.decorators import staff_member_required 
-from django.db.models import Q  # For search/filter
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
-from .models import Booking, Table
-from .forms import BookingForm, Booking
-
-from django.shortcuts import redirect
-
-# For PDF generation
-from django.template.loader import get_template
-from django.http import HttpResponse
+# Standard library
+from datetime import datetime, timedelta, date, time, timedelta
 from io import BytesIO
-from xhtml2pdf import pisa
-from django.core.mail import EmailMessage
 
-from .models import Booking, Table
-from .forms import BookingForm, AvailabilityForm
-
-from .forms import BookingForm, AvailabilityForm, BookingStatusUpdateForm, TableForm
-
+# Third-party
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib import messages
+from django.core.mail import EmailMessage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import transaction
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import get_template
 from django.utils import timezone
-from .forms import TableForm
-from .forms import CustomUserCreationForm
+from django.views.decorators.http import require_POST
+from xhtml2pdf import pisa
 
+# Local
+from .models import Booking, Table
+from .forms import (
+    BookingForm,
+    AvailabilityForm,
+    BookingStatusUpdateForm,
+    TableForm,
+    CustomUserCreationForm,
+)
 
 
 def register(request):
@@ -118,7 +112,6 @@ def make_booking(request):
             available_tables = available_tables.exclude(
                 id__in=conflicting_table_ids).order_by('capacity')
 
-
             if available_tables.exists():
                 selected_table = available_tables.first()
                 try:
@@ -164,6 +157,7 @@ def my_bookings(request):
     return render(request, 'bookings/my_bookings.html', context)
 
 
+@require_POST
 @login_required
 def cancel_booking(request, booking_id):
     """Allow a user to cancel their booking."""
@@ -205,8 +199,9 @@ def staff_dashboard(request):
 
 
 def check_availability(request):
-    """View to check table availability based on date, time, and guests."""
+    """View to check table availability based on date, time, and guests, enforcing a ±2 hour rule."""
     available_tables = []
+
     if request.method == 'POST':
         form = AvailabilityForm(request.POST)
         if form.is_valid():
@@ -214,20 +209,29 @@ def check_availability(request):
             check_time = form.cleaned_data['check_time']
             num_guests = form.cleaned_data['num_guests']
 
-            # Find tables already booked at the exact date and time
-            booked_tables_ids = Booking.objects.filter(
-                booking_date=check_date,
-                booking_time=check_time
-            ).values_list('table__id', flat=True)
+            # Combine date and time into a datetime object
+            requested_datetime = timezone.make_aware(
+                datetime.combine(check_date, check_time))
+            two_hours_before = (requested_datetime - timedelta(hours=2)).time()
+            two_hours_after = (requested_datetime + timedelta(hours=2)).time()
 
-            # Find tables that can accommodate the guests and are not booked
+            # Find conflicting bookings within ±2 hours on the same date
+            conflicting_bookings = Booking.objects.filter(
+                booking_date=check_date,
+                booking_time__range=(two_hours_before, two_hours_after)
+            )
+
+            conflicting_table_ids = conflicting_bookings.values_list(
+                'table_id', flat=True)
+
+            # Find available tables that meet guest count and are not conflicted
             available_tables = Table.objects.filter(
                 capacity__gte=num_guests
-            ).exclude(id__in=booked_tables_ids).order_by('capacity')
+            ).exclude(id__in=conflicting_table_ids).order_by('capacity')
 
             if not available_tables.exists():
                 messages.warning(
-                    request, "No tables are available for the selected criteria.")
+                    request, "No tables are available within 2 hours of the selected time.")
             else:
                 messages.success(
                     request, f"Found {available_tables.count()} table(s) available.")
@@ -237,11 +241,10 @@ def check_availability(request):
     else:
         form = AvailabilityForm()
 
-    context = {
+    return render(request, 'bookings/check_availability.html', {
         'form': form,
-        'available_tables': available_tables,
-    }
-    return render(request, 'bookings/check_availability.html', context)
+        'available_tables': available_tables
+    })
 
 
 @staff_member_required
