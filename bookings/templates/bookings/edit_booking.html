@@ -1,0 +1,72 @@
+{% extends 'bookings/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white text-center py-3" style="background-color: #343a40;">
+                    <h2 class="mb-0">Edit Your Booking</h2>
+                    <p class="mb-0">Booking ID: {{ booking.id }} | Current Table: {{ booking.table.number }} | Guests: {{ booking.number_of_guests }}</p>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        <div class="alert alert-info" role="alert">
+                            <ul class="mb-0">
+                                {% for message in messages %}
+                                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.booking_date.id_for_label }}" class="form-label">Booking Date</label>
+                            {{ form.booking_date }}
+                            {% if form.booking_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.booking_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.booking_time.id_for_label }}" class="form-label">Booking Time</label>
+                            {{ form.booking_time }}
+                            {% if form.booking_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.booking_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.number_of_guests.id_for_label }}" class="form-label">Number of Guests</label>
+                            {{ form.number_of_guests }}
+                            {% if form.number_of_guests.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.number_of_guests.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Update Booking</button>
+                            <a href="{% url 'my_bookings' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

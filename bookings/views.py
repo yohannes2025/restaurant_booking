@@ -157,6 +157,97 @@ def my_bookings(request):
     return render(request, 'bookings/my_bookings.html', context)
 
 
+@login_required
+def edit_booking(request, booking_id):
+    """Allow a user to edit their existing booking."""
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+
+    if request.method == 'POST':
+        form = BookingForm(request.POST, instance=booking)
+        if form.is_valid():
+            booking_date = form.cleaned_data['booking_date']
+            booking_time = form.cleaned_data['booking_time']
+            number_of_guests = form.cleaned_data['number_of_guests']
+
+            # Combine date and time, then make it timezone-aware
+            booking_datetime = datetime.combine(booking_date, booking_time)
+            booking_datetime = timezone.make_aware(booking_datetime)
+
+            # Define allowed time range (same as in make_booking)
+            opening_time = time(9, 0)
+            closing_time = time(22, 0)
+
+            # Check if booking time is outside of allowed interval
+            if not (opening_time <= booking_time <= closing_time):
+                messages.warning(
+                    request, "Bookings can only be made between 9:00 AM and 10:00 PM.")
+                return render(request, 'bookings/edit_booking.html', {'form': form, 'booking': booking})
+
+            # Check if the booking is in the past
+            if booking_datetime < timezone.now():
+                messages.warning(
+                    request, "You cannot edit a booking to a past time.")
+                return render(request, 'bookings/edit_booking.html', {'form': form, 'booking': booking})
+
+            # Find tables booked at the exact time, excluding the current booking's table
+            booked_tables_ids = Booking.objects.filter(
+                booking_date=booking_date,
+                booking_time=booking_time
+            ).exclude(id=booking.id).values_list('table__id', flat=True)
+
+            # Start with tables that match capacity and aren't booked at that exact time
+            available_tables = Table.objects.filter(
+                capacity__gte=number_of_guests
+            ).exclude(id__in=booked_tables_ids)
+
+            # Further exclude tables booked within 1 hour window, excluding the current booking's table
+            one_hour_before = (datetime.combine(
+                booking_date, booking_time) - timedelta(hours=1)).time()
+            one_hour_after = (datetime.combine(
+                booking_date, booking_time) + timedelta(hours=1)).time()
+
+            conflicting_bookings = Booking.objects.filter(
+                booking_date=booking_date,
+                table__in=available_tables,
+                booking_time__range=(one_hour_before, one_hour_after)
+            ).exclude(id=booking.id)  # Exclude the current booking itself
+
+            conflicting_table_ids = conflicting_bookings.values_list(
+                'table__id', flat=True)
+            available_tables = available_tables.exclude(
+                id__in=conflicting_table_ids).order_by('capacity')
+
+            if available_tables.exists():
+                selected_table = available_tables.first()
+                try:
+                    with transaction.atomic():
+                        # Update the existing booking with new data
+                        booking.booking_date = booking_date
+                        booking.booking_time = booking_time
+                        booking.number_of_guests = number_of_guests
+                        booking.table = selected_table  # Assign the newly found table
+                        booking.save()
+                        messages.success(
+                            request, f"Your booking for Table {selected_table.number} has been updated successfully!")
+                        return redirect('my_bookings')
+                except Exception as e:
+                    messages.error(
+                        request, f"An error occurred during booking update: {e}")
+            else:
+                messages.warning(
+                    request, "No tables available for your requested date, time, and number of guests for this edit.")
+        else:
+            messages.error(request, "Please correct the errors in the form.")
+    else:
+        form = BookingForm(instance=booking)
+
+    context = {
+        'form': form,
+        'booking': booking,
+    }
+    return render(request, 'bookings/edit_booking.html', context)
+
+
 @require_POST
 @login_required
 def cancel_booking(request, booking_id):
