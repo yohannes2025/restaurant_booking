@@ -5,12 +5,16 @@ from django.utils import timezone
 from datetime import date, time, datetime, timedelta
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
+
+
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
         # You can add 'email' here if you want it on your registration form.
         # If adding email, consider making it unique in your User model if not already handled.
         fields = UserCreationForm.Meta.fields + ('email',)
+
+        
 class BookingForm(forms.ModelForm):
     booking_date = forms.DateField(
         widget=forms.DateInput(
