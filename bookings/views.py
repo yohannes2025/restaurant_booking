@@ -1,5 +1,8 @@
 # bookings/views.py
 # Standard library
+import os
+from bookings.models import Booking, Table
+from django.shortcuts import render
 from datetime import datetime, timedelta, date, time, timedelta
 from io import BytesIO
 
@@ -18,6 +21,7 @@ from django.template.loader import get_template
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
+from django.db.models import ProtectedError
 
 # Local
 from .models import Booking, Table
@@ -29,23 +33,51 @@ from .forms import (
     CustomUserCreationForm,
 )
 
+# Debug prints to confirm models.py is loaded correctly
+print(
+    f"DEBUG VIEWS: Loading models.py from: {os.path.abspath(os.path.join(os.path.dirname(__file__), 'models.py'))}")
+# (Note: Using os.path.join and os.path.dirname for robustness in getting models.py path)
+try:
+    from .models import Booking  # Import again to check its field directly
+    table_field = Booking._meta.get_field('table')
+    print(
+        f"DEBUG VIEWS: Booking.table.on_delete setting: {table_field.on_delete}")
+    # _PROTECT is the internal value for PROTECT
+    print(
+        f"DEBUG VIEWS: Is it PROTECT? {table_field.on_delete == ProtectedError._PROTECT}")
+except Exception as e:
+    print(f"DEBUG VIEWS: Could not inspect Booking.table.on_delete: {e}")
+
+
+# Decorator for staff members (assuming you have this defined elsewhere or use is_staff check)
+# If this is not defined elsewhere, ensure it's here or in a utils.py
+def staff_member_required(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_staff:
+            messages.error(
+                request, "You are not authorized to view this page.")
+            # Or wherever you redirect unauthorized users
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper_func
 
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Automatically log in the user after registration
             login(request, user)
             messages.success(request, "Registration successful. Welcome!")
-            return redirect('home')  # Redirect to home page or a profile page
+            return redirect('home')
         else:
-            # Add error messages to the form for display in template
             messages.error(
                 request, "Registration failed. Please correct the errors below.")
+            # important
+            return render(request, 'registration/register.html', {'form': form})
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
 
 
 def home_view(request):
@@ -79,10 +111,8 @@ def make_booking(request):
 
             # Check if the booking is in the past
             if booking_datetime < timezone.now():
-                messages.warning(
-                    request, "You cannot make a booking in the past.")
+                form.add_error('booking_date', "Booking date cannot be in the past.")
                 return render(request, 'bookings/make_booking.html', {'form': form})
-
 
             # Find tables booked at the exact time
             booked_tables_ids = Booking.objects.filter(
@@ -248,46 +278,75 @@ def edit_booking(request, booking_id):
     return render(request, 'bookings/edit_booking.html', context)
 
 
+# @require_POST
+# @login_required
+# def cancel_booking(request, booking_id):
+#     """Allow a user to cancel their booking."""
+#     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+
+#     # Combine date and time, then make it timezone-aware
+#     booking_datetime = datetime.combine(
+#         booking.booking_date, booking.booking_time)
+#     booking_datetime = timezone.make_aware(booking_datetime)
+
+#     if booking_datetime < timezone.now() + timedelta(hours=2):
+#         messages.warning(
+#             request, "Bookings cannot be cancelled within 2 hours of the reservation time.")
+#     else:
+#         booking.delete()
+#         messages.success(
+#             request, "Your booking has been successfully cancelled.")
+
+#     return redirect('my_bookings')
+
 @require_POST
 @login_required
 def cancel_booking(request, booking_id):
-    """Allow a user to cancel their booking."""
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-    # Combine date and time, then make it timezone-aware
-    booking_datetime = datetime.combine(
-        booking.booking_date, booking.booking_time)
-    booking_datetime = timezone.make_aware(booking_datetime)
+    # Combine date and time and make timezone-aware
+    booking_datetime = timezone.make_aware(
+        datetime.combine(booking.booking_date, booking.booking_time)
+    )
+
+    if booking.status == 'cancelled':
+        messages.warning(request, "This booking is already cancelled.")
+        return redirect('my_bookings')
 
     if booking_datetime < timezone.now() + timedelta(hours=2):
         messages.warning(
             request, "Bookings cannot be cancelled within 2 hours of the reservation time.")
-    else:
-        booking.delete()
-        messages.success(
-            request, "Your booking has been successfully cancelled.")
+        return redirect('my_bookings')
 
+    booking.status = 'cancelled'
+    booking.save()
+    messages.success(request, "Your booking has been successfully cancelled.")
     return redirect('my_bookings')
 
 
-# Staff Dashboard Views
-@staff_member_required
-def staff_dashboard(request):
-    """Restaurant staff dashboard overview."""
-    today = timezone.now().date()
-    upcoming_bookings_count = Booking.objects.filter(
-        booking_date__gte=today, status='pending').count()
-    confirmed_today_count = Booking.objects.filter(
-        booking_date=today, status='confirmed').count()
-    total_tables = Table.objects.count()
+# @staff_member_required
+# def staff_dashboard(request):
+#     """Restaurant staff dashboard overview."""
+#     today = timezone.now().date()
+#     upcoming_bookings_count = Booking.objects.filter(
+#         booking_date__gte=today, status='pending').count()
+#     confirmed_today_count = Booking.objects.filter(
+#         booking_date=today, status='confirmed').count()
+#     total_tables = Table.objects.count()
 
-    context = {
-        'upcoming_bookings_count': upcoming_bookings_count,
-        'confirmed_today_count': confirmed_today_count,
-        'total_tables': total_tables,
-    }
-    return render(request, 'bookings/staff_dashboard.html', context)
+#     upcoming_active_bookings_count = Booking.objects.filter(
+#         booking_date__gte=today,
+#         status='pending',
+#         # active=True,  # Removed because field does not exist
+#     ).count()
 
+#     context = {
+#         'upcoming_bookings_count': upcoming_bookings_count,
+#         'confirmed_today_count': confirmed_today_count,
+#         'total_tables': total_tables,
+#         'upcoming_active_bookings_count': upcoming_active_bookings_count,
+#     }
+#     return render(request, 'bookings/staff_dashboard.html', context)
 
 def check_availability(request):
     """View to check table availability based on date, time, and guests, enforcing a ±2 hour rule."""
@@ -338,6 +397,42 @@ def check_availability(request):
     })
 
 
+def staff_dashboard(request):
+    # Ensure only staff can access
+    if not request.user.is_staff:
+        # Redirect or show permission denied as appropriate
+        return redirect('login')  # or use permission decorators
+
+    today = timezone.now().date()
+
+    # Filter bookings with status 'pending' or 'confirmed' and date >= today
+    upcoming_bookings = Booking.objects.filter(
+        booking_date__gte=today,
+        status__in=['pending', 'confirmed']
+    )
+
+    # Count the number of upcoming active bookings
+    upcoming_active_bookings_count = upcoming_bookings.count()
+
+    # Count bookings confirmed for today (optional, based on your context)
+    confirmed_today_count = Booking.objects.filter(
+        booking_date=today,
+        status='confirmed'
+    ).count()
+
+    total_tables = Table.objects.count()
+
+    context = {
+        'upcoming_active_bookings_count': upcoming_active_bookings_count,
+        'confirmed_today_count': confirmed_today_count,
+        'total_tables': total_tables,
+    }
+
+    return render(request, 'bookings/staff_dashboard.html', context)
+
+# Decorator for staff members (assuming you have this defined elsewhere or use is_staff check)
+
+
 @staff_member_required
 def staff_booking_list(request):
     """List all bookings for staff, with search and filters."""
@@ -357,11 +452,12 @@ def staff_booking_list(request):
         bookings_list = bookings_list.filter(status=status_filter)
     if date_filter:
         try:
-            # Assuming date_filter comes in YYYY-MM-DD format
             parsed_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
             bookings_list = bookings_list.filter(booking_date=parsed_date)
         except ValueError:
-            messages.error(request, "Invalid date format.")
+            messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
+            # Clear the date_filter so it doesn't show invalid value in the form
+            date_filter = ''    # Reset to empty
 
     paginator = Paginator(bookings_list, 10)  # Show 10 bookings per page
     page = request.GET.get('page')
@@ -380,7 +476,14 @@ def staff_booking_list(request):
         'status_choices': Booking.BOOKING_STATUS_CHOICES,  # Pass choices to template
         'active_tab': 'bookings',
     }
-    return render(request, 'bookings/staff_booking_list.html', context)
+    return render(request, 'bookings/staff_booking_list.html', {
+        'bookings': bookings,
+        'query': query,
+        'status_filter': status_filter,
+        'date_filter': date_filter,
+        'status_choices': Booking.BOOKING_STATUS_CHOICES,
+        'active_tab': 'bookings',
+    })
 
 
 @staff_member_required
@@ -408,19 +511,23 @@ def staff_booking_detail(request, booking_id):
 
 @staff_member_required
 def staff_table_list(request):
-    """List and manage restaurant tables."""
+    """
+    Displays a list of all restaurant tables and allows staff to add new ones.
+    """
     tables = Table.objects.all().order_by('number')
 
     if request.method == 'POST':
         form = TableForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "New table added successfully!")
+            messages.success(
+                request, f"Table {form.cleaned_data['number']} added successfully!")
             return redirect('staff_table_list')
         else:
-            messages.error(request, "Please correct the errors in the form.")
+            messages.error(
+                request, "Please correct the errors in the form when adding a table.")
     else:
-        form = TableForm()
+        form = TableForm()  # For GET request, provide an empty form
 
     context = {
         'tables': tables,
@@ -429,41 +536,84 @@ def staff_table_list(request):
     }
     return render(request, 'bookings/staff_table_list.html', context)
 
+
 @staff_member_required
 def staff_table_edit(request, table_id):
     """Edit a specific restaurant table."""
     table = get_object_or_404(Table, id=table_id)
 
     if request.method == 'POST':
-        form = BookingForm(request.POST, instance=table)
-        # NOTE: BookingForm is probably not the right form for editing tables.
-        # You should create a separate TableForm for editing tables.
-        # For now, assuming you have a TableForm:
         form = TableForm(request.POST, instance=table)
-
         if form.is_valid():
             form.save()
             messages.success(
                 request, f"Table {table.number} updated successfully!")
             return redirect('staff_table_list')
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, "Please correct the errors in the form.")
     else:
         form = TableForm(instance=table)
 
     context = {
         'form': form,
         'table': table,
+        'active_tab': 'tables',
     }
     return render(request, 'bookings/staff_table_edit.html', context)
 
 
 @staff_member_required
+@require_POST
 def staff_table_delete(request, table_id):
-    table = get_object_or_404(Table, id=table_id)
-    if request.method == "POST":
+    """
+    Deletes a specific restaurant table. Protected if it has active bookings.
+    """
+    print(
+        f"\n--- DEBUG VIEWS: Entering staff_table_delete for table_id: {table_id} ---")
+
+    try:
+        table = get_object_or_404(Table, pk=table_id)
+        print(f"DEBUG VIEWS: Retrieved table: {table.number} (PK: {table.pk})")
+
+        # Check related bookings BEFORE the delete attempt
+        related_bookings = Booking.objects.filter(table=table)
+        print(
+            f"DEBUG VIEWS: Number of related bookings for table {table.pk}: {related_bookings.count()}")
+        if related_bookings.exists():
+            print(
+                f"DEBUG VIEWS: Related booking PKs: {[b.pk for b in related_bookings]}")
+            print(
+                f"DEBUG VIEWS: Related booking statuses: {[b.status for b in related_bookings]}")
+        else:
+            print(
+                f"DEBUG VIEWS: No related bookings found for table {table.pk}.")
+
+        # This is the line that should raise ProtectedError if relationships exist and PROTECT is on
         table.delete()
+
+        print(
+            f"DEBUG VIEWS: Table {table.pk} DELETED successfully (THIS SHOULD NOT HAPPEN IF PROTECTED!).")
         messages.success(
-            request, f"Table {table.number} deleted successfully.")
+            request, f"Table {table.number} deleted successfully!")
+        return redirect('staff_table_list')  # Returns 302
+
+    except ProtectedError as e:
+        print(
+            f"DEBUG VIEWS: ProtectedError CAUGHT for Table {table_id}. Error: {e}")
+        messages.error(
+            request, "This table cannot be deleted as it has active bookings.")
+        # Render the staff table list page with the error message
+        tables = Table.objects.all().order_by('number')
+        form = TableForm()
+        context = {'tables': tables, 'form': form, 'active_tab': 'tables'}
+        # Returns 200
+        return render(request, 'bookings/staff_table_list.html', context)
+
+    except Exception as e:
+        # Catch any other unexpected errors during the process
+        print(
+            f"DEBUG VIEWS: An UNEXPECTED ERROR occurred for Table {table_id}: {e}")
+        messages.error(
+            request, f"An unexpected error occurred while deleting the table: {e}")
+        # Redirect to list page even for unexpected errors
         return redirect('staff_table_list')
-    return render(request, 'bookings/staff_table_confirm_delete.html', {'table': table})
