@@ -72,7 +72,7 @@ class Booking(models.Model):
     number_of_guests = models.IntegerField()
     notes = models.TextField(blank=True, null=True)
     status = models.CharField(
-        max_length=20, choices=BOOKING_STATUS_CHOICES, default='pending')  # New field
+        max_length=20, choices=BOOKING_STATUS_CHOICES, default='confirmed')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

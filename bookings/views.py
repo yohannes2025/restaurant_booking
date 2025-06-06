@@ -368,8 +368,10 @@ def check_availability(request):
             # Find conflicting bookings within ±2 hours on the same date
             conflicting_bookings = Booking.objects.filter(
                 booking_date=check_date,
-                booking_time__range=(two_hours_before, two_hours_after)
+                booking_time__range=(two_hours_before, two_hours_after),
+                status='confirmed'  # Only confirmed bookings block availability
             )
+
 
             conflicting_table_ids = conflicting_bookings.values_list(
                 'table_id', flat=True)
