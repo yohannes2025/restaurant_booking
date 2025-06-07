@@ -3,7 +3,7 @@
 import os
 from bookings.models import Booking, Table
 from django.shortcuts import render
-from datetime import datetime, timedelta, date, time, timedelta
+from datetime import datetime, timedelta, date, time
 from io import BytesIO
 
 # Third-party

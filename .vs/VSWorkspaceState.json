@@ -2,9 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\bookings",
-    "\\bookings\\templates",
-    "\\bookings\\templates\\bookings"
+    "\\bookings\\tests"
   ],
-  "SelectedNode": "\\bookings\\templates\\bookings\\my_bookings.html",
+  "SelectedNode": "\\bookings\\tests\\test_views.py",
   "PreviewInSolutionExplorer": false
 }
