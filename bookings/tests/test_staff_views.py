@@ -53,26 +53,6 @@ class StaffViewsTest(TestCase):
             booking_date=cls.today + timedelta(days=5), booking_time=time(10, 0), number_of_guests=2, status='cancelled'
         )
 
-    def setUp(self):
-        # This setup is fine as it creates a fresh login for each test
-        self.client = Client()
-        self.staff_user_for_login = User.objects.create_user(  # Give it a different name to avoid confusion
-            username='teststaffuser',  # Ensure this username is truly unique
-            password='testpassword',
-            is_staff=True
-        )
-        login_successful = self.client.login(
-            username='teststaffuser',
-            password='testpassword'
-        )
-        self.assertTrue(login_successful, "Login failed in setUp.")
-
-        # This `self.table` is only used by `test_staff_table_edit_POST_success`
-        # and doesn't interfere with `cls.table1` or `cls.table2`
-        self.table = Table.objects.create(number=100, capacity=4)
-
-    # def setUp(self):
-    #     self.client = Client()
     
     def setUp(self):
         # Create a staff user and log in
