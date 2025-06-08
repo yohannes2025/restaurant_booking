@@ -27,3 +27,4 @@ static_root/       # Collected static files
 .DS_Store
 .localized
 Thumbs.db
+.vs/
