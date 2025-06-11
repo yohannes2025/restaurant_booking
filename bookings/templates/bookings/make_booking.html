@@ -3,36 +3,131 @@
 {% block title %}Make a Booking{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4">Make a New Booking</h1>
-    
-    <form method="post">
-        {% csrf_token %}
-        {% for field in form %}
-            <div class="mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                {% endif %}
-                {% for error in field.errors %}
-                    <div class="invalid-feedback d-block">{{ error }}</div>
-                {% endfor %}
-            </div>
-        {% endfor %}
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <button type="submit" class="btn btn-success">Find Table & Book</button>
-    </form>
+    <style>
+        /* These styles mimic Bootstrap's default appearance for the booking form */
+        /* Styles related to 'body' were removed to ensure base.html's layout and menu are preserved. */
+
+        .booking-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            max-width: 600px;
+            width: 100%;
+            margin: 3rem auto; /* Added margin-top/bottom and auto for left/right to center within base content */
+        }
+        h1 {
+            color: #343a40; /* Darker heading color */
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        /* Applying Bootstrap's .form-control-like styling directly since Bootstrap CSS is external */
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: 0.5rem; /* More rounded input fields */
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+        }
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .invalid-feedback {
+            font-size: 0.875rem;
+            color: #dc3545; /* Red for errors */
+            display: block; /* Ensure errors are visible */
+            margin-top: 0.25rem;
+        }
+        /* Applying Bootstrap's .btn and .btn-success-like styling directly */
+        .btn-success {
+            display: inline-block;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #fff;
+            background-color: #28a745;
+            border: 1px solid #28a745;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            cursor: pointer;
+            width: 100%; /* Full width button */
+            margin-top: 1.5rem;
+        }
+        .btn-success:hover {
+            color: #fff;
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        /* Applying Bootstrap's .alert and .alert-danger-like styling directly */
+        .alert-danger {
+            position: relative;
+            padding: 1rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.5rem;
+            color: #842029;
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+        }
+    </style>
+    <div class="booking-container">
+        <h1 class="mb-4">Make a New Booking</h1>
+        
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {# Django's {{ field }} will automatically render as <input type="date"> or <input type="time"> if defined as DateField/TimeField in your Django form. This will provide native browser pickers. #}
+                    {{ field }} 
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <button type="submit" class="btn btn-success">Find Table & Book</button>
+        </form>
+    </div>
 {% endblock %}
 
 
-{% comment %} 
-{% extends 'bookings/base.html' %}
+{% comment %} {% extends 'bookings/base.html' %}
 
 {% block title %}Make a Booking{% endblock %}
 
@@ -64,3 +159,34 @@
 {% endblock %} {% endcomment %}
 
 
+{% comment %} {% extends 'bookings/base.html' %}
+
+{% block title %}Make a Booking{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Make a New Booking</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-success">Find Table & Book</button>
+    </form>
+{% endblock %} {% endcomment %}
